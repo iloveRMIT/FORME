@@ -19,7 +19,19 @@ function toast(message){let el=qs('#toast');if(!el){el=document.createElement('d
 function addToBag(id,size,eventDate){const item=byId(id);if(!item)return;const bag=getBag(),line=bag.find(x=>x.id===id);if(line){if(size)line.size=size;if(eventDate)line.eventDate=eventDate;toast('This piece is already in your rental bag.');}else{bag.push({id,size:size||item.sizes[0],eventDate:eventDate||''});toast(`${item.name} added to your rental bag.`);}setBag(bag);updateBagBadge();}
 function removeFromBag(id){setBag(getBag().filter(x=>x.id!==id));updateBagBadge();}
 function toggleSaved(id){const saved=getSaved(),exists=saved.includes(id);setSaved(exists?saved.filter(x=>x!==id):[...saved,id]);toast(exists?'Removed from saved items.':'Saved for later.');return !exists;}
-function productImage(item){return item?.image?`assets/images/placeholders/${item.image}`:'assets/images/placeholders/trousers-black.svg';}
+function productImage(item) {
+  const src = item?.image?.trim();
+
+  if (!src) {
+    return 'assets/images/placeholders/trousers-black.svg';
+  }
+
+  if (/^(https?:\/\/|data:|blob:)/i.test(src)) {
+    return src;
+  }
+
+  return `assets/images/placeholders/${src}`;
+}
 function productCard(item,{badge='',meta=''}={}){if(!item)return'';return `<article class="product-card"><button class="save-button" data-save="${item.id}" aria-label="Save ${item.name}">${getSaved().includes(item.id)?'♥':'♡'}</button><a class="product-image product-image-frame" href="product.html?id=${encodeURIComponent(item.id)}"><img src="${productImage(item)}" alt="${item.name} placeholder — replace image"></a>${badge?`<span class="card-badge">${badge}</span>`:''}<div class="product-meta"><div><a class="product-title-link" href="product.html?id=${encodeURIComponent(item.id)}"><h3>${item.name}</h3></a><p>${meta||`${item.collection} · ${item.category}`}</p><small>${item.sizes.join(' · ')}</small></div><b class="card-price">${vnd(item.price)} <small>/ 3 days</small></b></div><div class="card-actions"><button class="quick-add" data-add="${item.id}">Quick add</button><a class="quick-add" href="product.html?id=${encodeURIComponent(item.id)}">View item</a></div></article>`;}
 function bindProductCards(scope=document){qsa('[data-add]',scope).forEach(button=>button.onclick=()=>addToBag(button.dataset.add));qsa('[data-save]',scope).forEach(button=>button.onclick=()=>{button.textContent=toggleSaved(button.dataset.save)?'♥':'♡';});}
 function compressImage(file,maxDimension=800,quality=.78){return new Promise((resolve,reject)=>{if(!file||!file.type.startsWith('image/'))return reject(new Error('Choose a JPG, PNG or WEBP image.'));const reader=new FileReader();reader.onload=()=>{const image=new Image();image.onload=()=>{const scale=Math.min(1,maxDimension/Math.max(image.width,image.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));const ctx=canvas.getContext('2d');ctx.fillStyle='#f1eee8';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',quality));};image.onerror=()=>reject(new Error('We could not read that image.'));image.src=reader.result;};reader.onerror=()=>reject(new Error('We could not read that image.'));reader.readAsDataURL(file);});}
