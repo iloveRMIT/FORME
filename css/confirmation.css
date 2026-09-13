@@ -1,0 +1,1 @@
+.confirmation .featured-grid{display:flex;flex-wrap:wrap;justify-content:center;column-gap:18px;row-gap:32px;margin:26px 0 32px}.confirmation .featured-grid>.product-card{flex:0 1 180px;width:180px;max-width:100%}@media(max-width:540px){.confirmation .featured-grid{column-gap:14px;row-gap:24px}.confirmation .featured-grid>.product-card{flex-basis:160px;width:160px}}
